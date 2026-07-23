@@ -442,7 +442,8 @@ function renderOverview(ov) {
       const dep = ov.deposit || 0;
       const chg = ov.deposit_chg || 0;
       const depStr = dep ? `${(dep/10000).toFixed(1)}조원` : '—';
-      const chgStr = chg ? `<span class="${cls(chg)}">${sign(chg)}${Math.abs(chg).toLocaleString()}억</span>` : '';
+      const chgSign = chg > 0 ? '+' : chg < 0 ? '-' : '';
+      const chgStr = chg ? `<span class="${cls(chg)}">${chgSign}${Math.abs(chg).toLocaleString()}억</span>` : '';
       return renderMarketCard('고객예탁금', depStr, chgStr);
     })(),
   ];
