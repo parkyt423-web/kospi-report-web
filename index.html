@@ -489,7 +489,7 @@ function renderStock(s, idx, consecutiveMap) {
   const sentLabel  = SENT_LABEL[sentiment] || '😐 중립';
 
   const insightHtml = s.insight
-    ? `<div class="sc-insight"><div class="insight-label">📊 3축 분석</div>${escHtml(s.insight)}</div>` : '';
+    ? `<div class="sc-insight"><div class="insight-label">📊 3축 분석</div>${escHtml(s.insight).replace(/\s*\|\s*(?=[①②③])/g, '<br>')}</div>` : '';
   const keyHtml = s.key_point
     ? `<div class="sc-keypoint">💡 ${escHtml(s.key_point)}</div>` : '';
 
