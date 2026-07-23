@@ -470,8 +470,8 @@ function renderStock(s, idx, consecutiveMap) {
   const ticker = s.ticker || '';
 
   const badges = [];
-  if (s.is_52w_high)  badges.push(`<span class="badge badge-high">52주 신고가 🔥</span>`);
-  if (s.is_52w_low)   badges.push(`<span class="badge badge-low">52주 신저가 ⚠️</span>`);
+  if (s.is_52w_high && (s.change_rate || 0) >= 0) badges.push(`<span class="badge badge-high">52주 신고가 🔥</span>`);
+  if (s.is_52w_low  && (s.change_rate || 0) <= 0) badges.push(`<span class="badge badge-low">52주 신저가 ⚠️</span>`);
   const cons = consecutiveMap[ticker] || 1;
   if (cons >= 2) badges.push(`<span class="badge badge-cons">${cons}일 연속</span>`);
 
