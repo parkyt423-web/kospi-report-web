@@ -312,6 +312,63 @@ body {
   white-space: pre-wrap;
 }
 
+/* ── Weekly divider ── */
+.weekly-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 32px 0 20px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1a2942;
+}
+.weekly-divider::before, .weekly-divider::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+}
+
+/* ── Diverging bar chart ── */
+.sector-bar-chart { display: flex; flex-direction: column; gap: 3px; margin-bottom: 4px; }
+.sector-bar-row { display: flex; align-items: center; gap: 8px; min-height: 20px; }
+.sector-bar-name {
+  width: 140px;
+  font-size: 11.5px;
+  color: #374151;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.db-track {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  height: 16px;
+}
+.db-half-l {
+  display: flex;
+  justify-content: flex-end;
+  align-items: stretch;
+  background: #f8fafc;
+}
+.db-half-r {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  background: #f8fafc;
+}
+.db-divider { background: #94a3b8; }
+.db-bar { display: block; }
+.sector-bar-rate {
+  width: 56px;
+  font-size: 11.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 /* ── Empty state ── */
 #empty {
   display: flex;
@@ -559,6 +616,143 @@ function escHtml(s) {
     .replace(/"/g,'&quot;');
 }
 
+// ── Weekly view helpers ──
+function isFriday(dateStr) {
+  const y = +dateStr.slice(0,4), m = +dateStr.slice(4,6)-1, d = +dateStr.slice(6,8);
+  return new Date(y, m, d).getDay() === 5;
+}
+
+function findPrevFriday(dateStr) {
+  const sorted = Object.keys(REPORTS).sort();
+  const idx = sorted.indexOf(dateStr);
+  for (let i = idx - 1; i >= 0; i--) {
+    if (isFriday(sorted[i])) return sorted[i];
+  }
+  return null;
+}
+
+function getWeekDates(fridayDateStr) {
+  const fy = +fridayDateStr.slice(0,4), fm = +fridayDateStr.slice(4,6)-1, fd = +fridayDateStr.slice(6,8);
+  const friMs = new Date(fy, fm, fd).getTime();
+  const monMs = friMs - 4 * 86400000;
+  return Object.keys(REPORTS).sort().filter(ds => {
+    const dy = +ds.slice(0,4), dm = +ds.slice(4,6)-1, dd = +ds.slice(6,8);
+    const ms = new Date(dy, dm, dd).getTime();
+    return ms >= monMs && ms <= friMs;
+  });
+}
+
+function computeWeeklySectorPerf(weekDates) {
+  const map = {};
+  for (const ds of weekDates) {
+    const sp = (REPORTS[ds] && REPORTS[ds].sector_perf) || [];
+    for (const s of sp) {
+      if (!map[s.no]) map[s.no] = { name: s.name, cum: 1 };
+      map[s.no].cum *= (1 + s.rate / 100);
+    }
+  }
+  return Object.values(map)
+    .map(s => ({ name: s.name, rate: (s.cum - 1) * 100 }))
+    .sort((a, b) => b.rate - a.rate);
+}
+
+function renderDivergingChart(sectors) {
+  if (!sectors.length) return '';
+  const maxAbs = Math.max(...sectors.map(s => Math.abs(s.rate)), 0.01);
+  const rows = sectors.map(s => {
+    const pct = (Math.abs(s.rate) / maxAbs * 100).toFixed(1);
+    const isPos = s.rate >= 0;
+    const leftBar  = isPos ? '' : `<div class="db-bar" style="width:${pct}%;background:#3b82f6"></div>`;
+    const rightBar = isPos ? `<div class="db-bar" style="width:${pct}%;background:#ef4444"></div>` : '';
+    return `<div class="sector-bar-row">
+      <div class="sector-bar-name">${escHtml(s.name)}</div>
+      <div class="db-track">
+        <div class="db-half-l">${leftBar}</div>
+        <div class="db-divider"></div>
+        <div class="db-half-r">${rightBar}</div>
+      </div>
+      <div class="sector-bar-rate ${cls(s.rate)}">${sign(s.rate)}${s.rate.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+  return `<div class="sector-bar-chart">${rows}</div>`;
+}
+
+function renderWeeklySection(currentDateStr, prevFriDateStr, weekDates) {
+  const currOv = (REPORTS[currentDateStr] && REPORTS[currentDateStr].market_overview) || {};
+  const prevOv = prevFriDateStr ? ((REPORTS[prevFriDateStr] && REPORTS[prevFriDateStr].market_overview) || {}) : {};
+
+  const pct2dp = (c, p) => {
+    const d = (c - p) / Math.abs(p) * 100;
+    return `${p.toLocaleString(undefined,{minimumFractionDigits:2})} → ${c.toLocaleString(undefined,{minimumFractionDigits:2})} <span class="${cls(d)}">${sign(d)}${d.toFixed(2)}%</span>`;
+  };
+  const absDiff = (c, p) => {
+    const d = c - p;
+    return `${p.toFixed(2)}% → ${c.toFixed(2)}% <span class="${cls(d)}">${sign(d)}${d.toFixed(3)}%p</span>`;
+  };
+  const usdDiff = (c, p) => {
+    const d = c - p;
+    return `${p.toFixed(2)} → ${c.toFixed(2)}원 <span class="${cls(-d)}">${sign(d)}${d.toFixed(2)}원</span>`;
+  };
+  const vixDiff = (c, p) => {
+    const d = c - p;
+    return `${p.toFixed(2)} → ${c.toFixed(2)} <span class="${cls(-d)}">${sign(d)}${d.toFixed(2)}</span>`;
+  };
+  const depDiff = (c, p) => {
+    const d = c - p;
+    return `${(p/10000).toFixed(1)}조 → ${(c/10000).toFixed(1)}조 <span class="${cls(d)}">${sign(d)}${(Math.abs(d)/10000).toFixed(1)}조</span>`;
+  };
+
+  const mkCard = (label, curr, prev, fmtVal, fmtChg) => {
+    if (!curr) return '';
+    const val = fmtVal(curr);
+    const hasPrev = prev != null && prev !== 0;
+    const chgHtml = hasPrev ? fmtChg(curr, prev) : '';
+    const colorCls = (hasPrev && chgHtml) ? cls(curr - prev) : '';
+    return renderMarketCard(label, `<span class="${colorCls}">${val}</span>`, chgHtml);
+  };
+
+  const cards = [
+    mkCard('KOSPI 주간',    currOv.kospi_close,  prevOv.kospi_close,  v => v.toLocaleString(undefined,{minimumFractionDigits:2}), pct2dp),
+    mkCard('KOSDAQ 주간',   currOv.kosdaq_close, prevOv.kosdaq_close, v => v.toLocaleString(undefined,{minimumFractionDigits:2}), pct2dp),
+    mkCard('나스닥 주간',   currOv.nasdaq_close, prevOv.nasdaq_close, v => v.toLocaleString(undefined,{minimumFractionDigits:2}), pct2dp),
+    mkCard('S&P500 주간',   currOv.sp500_close,  prevOv.sp500_close,  v => v.toLocaleString(undefined,{minimumFractionDigits:2}), pct2dp),
+    mkCard('VIX 주간',      currOv.vix,          prevOv.vix,          v => v.toFixed(2), vixDiff),
+    mkCard('원/달러 주간',  currOv.usdkrw,       prevOv.usdkrw,       v => `${v.toFixed(2)}원`, usdDiff),
+    mkCard('WTI 주간',      currOv.wti_close,    prevOv.wti_close,    v => `$${v.toFixed(2)}`, pct2dp),
+    mkCard('미국10년물 주간', currOv.us10y,       prevOv.us10y,        v => `${v.toFixed(2)}%`, absDiff),
+    currOv.deposit ? mkCard('예탁금 주간', currOv.deposit, prevOv.deposit, v => `${(v/10000).toFixed(1)}조`, depDiff) : '',
+  ].filter(Boolean).join('');
+
+  // Weekly investor flow sum
+  let wF = 0, wI = 0, wP = 0;
+  for (const ds of weekDates) {
+    const ov = (REPORTS[ds] && REPORTS[ds].market_overview) || {};
+    wF += ov.foreign_net || 0;
+    wI += ov.inst_net    || 0;
+    wP += ov.indiv_net   || 0;
+  }
+  const invRow = `<div class="investor-row">
+    <div class="inv-chip">외국인 주간 <span class="${cls(wF)}">${netStr(wF)}</span></div>
+    <div class="inv-chip">기관 주간 <span class="${cls(wI)}">${netStr(wI)}</span></div>
+    <div class="inv-chip">개인 주간 <span class="${cls(wP)}">${netStr(wP)}</span></div>
+  </div>`;
+
+  const chartHtml = renderDivergingChart(computeWeeklySectorPerf(weekDates));
+  const weekLabel = prevFriDateStr ? `vs ${fmtDate(prevFriDateStr)} 기준` : `${weekDates.length}일 누적`;
+
+  return `
+    <div class="weekly-divider"><span>📆 주간 변동 (${weekLabel})</span></div>
+    <div class="section">
+      <div class="section-title">📊 시장 주간 변동</div>
+      <div class="market-grid">${cards}</div>
+      ${invRow}
+    </div>
+    <div class="section">
+      <div class="section-title">🔄 섹터 주간 등락</div>
+      ${chartHtml}
+    </div>`;
+}
+
 function renderReport(data) {
   const ov   = data.market_overview || {};
   const kpCr = ov.kospi_change_rate || 0;
@@ -595,6 +789,13 @@ function renderReport(data) {
   }
 
   html += renderSector(data.sector_perf || [], data.sector_analysis || '');
+
+  if (isFriday(data.date)) {
+    const prevFri   = findPrevFriday(data.date);
+    const weekDates = getWeekDates(data.date);
+    html += renderWeeklySection(data.date, prevFri, weekDates);
+  }
+
   return html;
 }
 
@@ -605,7 +806,8 @@ function buildSidebar(dates) {
     const div = document.createElement('div');
     div.className = 'date-item' + (i === 0 ? ' active' : '');
     div.dataset.date = d;
-    div.innerHTML = `<div>${fmtDate(d)}</div>`;
+    const weekTag = isFriday(d) ? `<span style="font-size:10px;color:#60a5fa;margin-top:2px;display:block">📆 주간포함</span>` : '';
+    div.innerHTML = `<div>${fmtDate(d)}${weekTag}</div>`;
     div.addEventListener('click', () => {
       document.querySelectorAll('.date-item').forEach(el => el.classList.remove('active'));
       div.classList.add('active');
