@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>한국 증시 일일 리포트</title>
 <script src="reports.js"></script>
+<script src="contents.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,21 +15,44 @@ body {
   color: #1e293b;
   min-height: 100vh;
   display: flex;
+  flex-direction: column;
 }
 
-/* ── Sidebar ── */
-#sidebar {
+/* ── Top tabs ── */
+#top-tabs {
+  display: flex;
+  background: #10192b;
+  padding: 0 16px;
+  flex: 0 0 auto;
+}
+.top-tab {
+  padding: 14px 20px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all .15s;
+  user-select: none;
+}
+.top-tab:hover { color: #fff; }
+.top-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+
+#view-wrap { flex: 1; display: flex; min-height: 0; }
+.view { display: flex; flex: 1; min-height: 0; }
+.view.hidden { display: none; }
+
+/* ── Side nav (shared: kospi 날짜 선택 / 콘텐츠 날짜 선택) ── */
+.side-nav {
   width: 220px;
   min-width: 220px;
   background: #1a2942;
-  height: 100vh;
-  position: sticky;
-  top: 0;
+  height: 100%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
-#sidebar-title {
+.side-nav-title {
   padding: 20px 16px 12px;
   font-size: 13px;
   font-weight: 700;
@@ -37,7 +61,7 @@ body {
   text-transform: uppercase;
   border-bottom: 1px solid #2d3f5a;
 }
-#date-list { flex: 1; padding: 8px 0; }
+.date-list { flex: 1; padding: 8px 0; overflow-y: auto; }
 .date-item {
   padding: 10px 18px;
   font-size: 13.5px;
@@ -57,12 +81,12 @@ body {
 .date-item .di-date { font-size: 12px; color: #94a3b8; }
 .date-item.active .di-date { color: #93c5fd; }
 
-/* ── Main ── */
-#main {
+/* ── Main panel (shared) ── */
+.main-panel {
   flex: 1;
   padding: 28px 32px;
   max-width: 1100px;
-  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ── Report header ── */
@@ -369,8 +393,65 @@ body {
   flex-shrink: 0;
 }
 
+/* ── Content summary feed ── */
+.content-date-header {
+  font-size: 13px;
+  font-weight: 800;
+  color: #1a2942;
+  margin: 28px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+}
+.content-date-header:first-child { margin-top: 0; }
+.content-run-header {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 16px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.content-run-count {
+  background: #eef2ff;
+  color: #3b82f6;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 8px;
+  border-radius: 10px;
+}
+.content-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.cc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.cc-type { font-size: 15px; }
+.cc-source {
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b82f6;
+  background: #eef2ff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.cc-title { font-size: 14.5px; font-weight: 700; color: #1a2942; text-decoration: none; }
+.cc-title:hover { text-decoration: underline; color: #3b82f6; }
+.cc-summary {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+.cc-summary b { color: #1a2942; }
+.cc-summary a { color: #3b82f6; }
+
 /* ── Empty state ── */
-#empty {
+.empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,26 +462,46 @@ body {
 
 /* ── Responsive ── */
 @media (max-width: 700px) {
-  body { flex-direction: column; }
-  #sidebar { width: 100%; min-width: 0; height: auto; position: static; }
-  #date-list { display: flex; overflow-x: auto; padding: 0; }
+  #view-wrap { flex-direction: column; }
+  .view { flex-direction: column; }
+  .side-nav { width: 100%; min-width: 0; height: auto; }
+  .date-list { display: flex; overflow-x: auto; padding: 0; }
   .date-item { white-space: nowrap; border-left: none; border-bottom: 3px solid transparent; padding: 10px 14px; }
   .date-item.active { border-bottom-color: #3b82f6; border-left-color: transparent; }
-  #main { padding: 16px; }
+  .main-panel { padding: 16px; }
   .sector-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
-<nav id="sidebar">
-  <div id="sidebar-title">📅 날짜 선택</div>
-  <div id="date-list"></div>
-</nav>
+<div id="top-tabs">
+  <div class="top-tab active" data-view="kospi">📊 코스피 리포트</div>
+  <div class="top-tab" data-view="content">📰 콘텐츠 요약</div>
+</div>
 
-<div id="main">
-  <div id="report-root"></div>
-  <div id="empty" style="display:none">데이터가 없습니다.</div>
+<div id="view-wrap">
+  <div id="kospi-view" class="view">
+    <nav class="side-nav">
+      <div class="side-nav-title">📅 날짜 선택</div>
+      <div id="date-list" class="date-list"></div>
+    </nav>
+    <div class="main-panel">
+      <div id="report-root"></div>
+      <div id="empty" class="empty-state" style="display:none">데이터가 없습니다.</div>
+    </div>
+  </div>
+
+  <div id="content-view" class="view hidden">
+    <nav class="side-nav">
+      <div class="side-nav-title">📅 날짜 선택</div>
+      <div id="content-date-list" class="date-list"></div>
+    </nav>
+    <div class="main-panel">
+      <div id="content-root"></div>
+      <div id="content-empty" class="empty-state" style="display:none">아직 요약이 없습니다.</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -809,7 +910,7 @@ function buildSidebar(dates) {
     const weekTag = isFriday(d) ? `<span style="font-size:10px;color:#60a5fa;margin-top:2px;display:block">📆 주간포함</span>` : '';
     div.innerHTML = `<div>${fmtDate(d)}${weekTag}</div>`;
     div.addEventListener('click', () => {
-      document.querySelectorAll('.date-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('#date-list .date-item').forEach(el => el.classList.remove('active'));
       div.classList.add('active');
       showReport(d);
     });
@@ -830,15 +931,107 @@ function showReport(dateStr) {
   root.innerHTML = renderReport(data);
 }
 
+// ── Content summary (콘텐츠 요약 탭) ──
+const TYPE_EMOJI = { blog: '📝', youtube: '🎬' };
+
+function sanitizeSummary(raw) {
+  // 허용 태그(b, i, a href)만 되살리고 나머지는 전부 이스케이프 — XSS 방지
+  let s = escHtml(raw || '');
+  s = s.replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>');
+  s = s.replace(/&lt;i&gt;/g, '<i>').replace(/&lt;\/i&gt;/g, '</i>');
+  s = s.replace(/&lt;a href=(?:&quot;|&#39;)([^"'<>]*?)(?:&quot;|&#39;)&gt;/g, '<a href="$1" target="_blank" rel="noopener">');
+  s = s.replace(/&lt;\/a&gt;/g, '</a>');
+  return s;
+}
+
+function renderContentCard(item) {
+  const emoji = TYPE_EMOJI[item.type] || '📄';
+  return `<div class="content-card">
+    <div class="cc-header">
+      <span class="cc-type">${emoji}</span>
+      <span class="cc-source">${escHtml(item.name)}</span>
+      <a class="cc-title" href="${escHtml(item.url)}" target="_blank" rel="noopener">${escHtml(item.title)}</a>
+    </div>
+    <div class="cc-summary">${sanitizeSummary(item.summary)}</div>
+  </div>`;
+}
+
+function renderContentFeed() {
+  if (typeof CONTENTS === 'undefined' || !Object.keys(CONTENTS).length) return '';
+  const runIds = Object.keys(CONTENTS).sort().reverse();
+  let html = '';
+  let lastDate = null;
+  for (const rid of runIds) {
+    const run = CONTENTS[rid];
+    if (!run.items || !run.items.length) continue;
+    if (run.date !== lastDate) {
+      html += `<div class="content-date-header" data-date="${run.date}">${fmtDate(run.date)}</div>`;
+      lastDate = run.date;
+    }
+    html += `<div class="content-run-header">🕐 ${run.time} <span class="content-run-count">${run.items.length}건</span></div>`;
+    html += run.items.map(renderContentCard).join('');
+  }
+  return html;
+}
+
+function buildContentSidebar() {
+  const list = document.getElementById('content-date-list');
+  list.innerHTML = '';
+  if (typeof CONTENTS === 'undefined') return;
+  const dates = [...new Set(Object.values(CONTENTS).map(r => r.date))].sort().reverse();
+  dates.forEach((d, i) => {
+    const div = document.createElement('div');
+    div.className = 'date-item' + (i === 0 ? ' active' : '');
+    div.innerHTML = `<div>${fmtDate(d)}</div>`;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('#content-date-list .date-item').forEach(el => el.classList.remove('active'));
+      div.classList.add('active');
+      const target = document.querySelector(`.content-date-header[data-date="${d}"]`);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    list.appendChild(div);
+  });
+}
+
+function initContentView() {
+  const root  = document.getElementById('content-root');
+  const empty = document.getElementById('content-empty');
+  const html  = renderContentFeed();
+  if (html) {
+    root.innerHTML = html;
+    empty.style.display = 'none';
+    buildContentSidebar();
+  } else {
+    root.innerHTML = '';
+    empty.style.display = 'flex';
+  }
+}
+
+// ── Tab switching ──
+function switchView(view) {
+  document.querySelectorAll('.top-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  document.getElementById('kospi-view').classList.toggle('hidden', view !== 'kospi');
+  document.getElementById('content-view').classList.toggle('hidden', view !== 'content');
+}
+
+document.querySelectorAll('.top-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
+});
+
 // ── Init ──
 (function init() {
   if (typeof REPORTS === 'undefined' || !Object.keys(REPORTS).length) {
     document.getElementById('empty').style.display = 'flex';
-    return;
+  } else {
+    const dates = Object.keys(REPORTS).sort().reverse();
+    buildSidebar(dates);
+    showReport(dates[0]);
   }
-  const dates = Object.keys(REPORTS).sort().reverse();
-  buildSidebar(dates);
-  showReport(dates[0]);
+
+  initContentView();
+
+  const params = new URLSearchParams(location.search);
+  if (params.get('tab') === 'content') switchView('content');
 })();
 </script>
 </body>
