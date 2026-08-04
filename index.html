@@ -627,10 +627,6 @@ function renderStock(s, idx, consecutiveMap) {
   const rate   = (prev && close) ? ((close-prev)/prev*100) : (s.change_rate || 0);
   const ticker = s.ticker || '';
 
-  const badges = [];
-  const cons = consecutiveMap[ticker] || 1;
-  if (cons >= 2) badges.push(`<span class="badge badge-cons">${cons}일 연속</span>`);
-
   const nameHtml = ticker
     ? `<a class="sc-name" href="https://www.valley.town/financials/quote/${ticker}:KRX/summary" target="_blank">${s.name}</a>`
     : `<span class="sc-name">${s.name}</span>`;
@@ -653,7 +649,6 @@ function renderStock(s, idx, consecutiveMap) {
     <div class="sc-header">
       <span class="sc-rank">${RANK_EMOJI[idx] || (idx+1)+'.'}</span>
       ${nameHtml}
-      ${badges.join(' ')}
       <span class="sc-vol">거래대금 ${amount}억</span>
     </div>
     <div class="sc-body">
