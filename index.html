@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>한국 증시 일일 리포트</title>
+<title>한국 증시 리포트</title>
 <script src="reports.js"></script>
 <script src="contents.js"></script>
 <style>
@@ -237,11 +237,18 @@ body {
 .inv-chip span.pos { color: var(--up); }
 .inv-chip span.neg { color: var(--down); }
 
-/* ── Stock cards ── */
-.stock-list { display: grid; grid-template-columns: 1fr; gap: 14px; }
-@media (min-width: 1280px) {
-  .stock-list { grid-template-columns: 1fr 1fr; }
+/* ── Stock cards: 좌 코스피 / 우 코스닥 2열 ── */
+.markets-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
 }
+.markets-columns .section { margin-bottom: 0; }
+@media (max-width: 900px) {
+  .markets-columns { grid-template-columns: 1fr; }
+}
+.stock-list { display: flex; flex-direction: column; gap: 14px; }
 .stock-card {
   border: 1px solid var(--hairline);
   border-radius: var(--r-lg);
@@ -539,7 +546,7 @@ body {
 <body>
 
 <div id="top-tabs">
-  <div class="top-tab active" data-view="kospi">📊 코스피 리포트</div>
+  <div class="top-tab active" data-view="kospi">📊 한국 증시 리포트</div>
   <div class="top-tab" data-view="content">📰 콘텐츠 요약</div>
 </div>
 
@@ -933,23 +940,22 @@ function renderReport(data) {
     <div class="report-header">
       <div class="rh-badge">${mEmoji} ${badgeTxt}</div>
       <div class="rh-title">${formatted} 한국 증시 리포트</div>
-      <div class="rh-meta">KOSPI ${(ov.kospi_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kpSign}${kpCr.toFixed(2)}%) &nbsp;·&nbsp; KOSDAQ ${(ov.kosdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kqSign}${kqCr.toFixed(2)}%) &nbsp;|&nbsp; 토큰 ${tokStr}</div>
+      <div class="rh-meta">KOSPI ${(ov.kospi_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kpSign}${kpCr.toFixed(2)}%)&nbsp;&nbsp;|&nbsp;&nbsp;KOSDAQ ${(ov.kosdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kqSign}${kqCr.toFixed(2)}%)&nbsp;&nbsp;토큰 ${tokStr}</div>
     </div>
     ${renderOverview(ov)}`;
 
-  if (data.stocks && data.stocks.length) {
-    const cards = data.stocks.map((s,i) => renderStock(s, i, consMap)).join('');
-    html += `<div class="section">
-      <div class="section-title">📊 코스피 거래대금 TOP 10</div>
-      <div class="stock-list">${cards}</div>
-    </div>`;
-  }
-
-  if (data.kosdaq_stocks && data.kosdaq_stocks.length) {
-    const cards = data.kosdaq_stocks.map((s,i) => renderStock(s, i, consMap)).join('');
-    html += `<div class="section">
-      <div class="section-title">📊 코스닥 거래대금 TOP 10</div>
-      <div class="stock-list">${cards}</div>
+  const kospiCards  = (data.stocks || []).map((s,i) => renderStock(s, i, consMap)).join('');
+  const kosdaqCards = (data.kosdaq_stocks || []).map((s,i) => renderStock(s, i, consMap)).join('');
+  if (kospiCards || kosdaqCards) {
+    html += `<div class="markets-columns">
+      <div class="section">
+        <div class="section-title">📊 코스피 거래대금 TOP 10</div>
+        <div class="stock-list">${kospiCards || '<div style="color:var(--ink-48);font-size:13px">데이터 없음</div>'}</div>
+      </div>
+      <div class="section">
+        <div class="section-title">📊 코스닥 거래대금 TOP 10</div>
+        <div class="stock-list">${kosdaqCards || '<div style="color:var(--ink-48);font-size:13px">데이터 없음</div>'}</div>
+      </div>
     </div>`;
   }
 
