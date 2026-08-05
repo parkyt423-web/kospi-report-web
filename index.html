@@ -30,7 +30,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root{
+  :root:not([data-theme="light"]){
     --primary:#2997ff;
     --primary-on-dark:#2997ff;
     --ink:#f5f5f7;
@@ -44,6 +44,20 @@
     --divider-soft:#2c2c2e;
     --down:#2997ff;
   }
+}
+:root[data-theme="dark"]{
+  --primary:#2997ff;
+  --primary-on-dark:#2997ff;
+  --ink:#f5f5f7;
+  --ink-80:#d2d2d7;
+  --ink-48:#98989d;
+  --body-muted:#98989d;
+  --canvas:#1c1c1e;
+  --parchment:#161618;
+  --pearl:#232325;
+  --hairline:#3a3a3c;
+  --divider-soft:#2c2c2e;
+  --down:#2997ff;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,11 +75,27 @@ body {
 /* ── Top tabs (global-nav) ── */
 #top-tabs {
   display: flex;
+  align-items: center;
   background: var(--surface-black);
   padding: 0 20px;
   height: 44px;
   flex: 0 0 auto;
 }
+.theme-toggle { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.theme-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--r-pill);
+  opacity: .45;
+  transition: opacity .15s, background .15s;
+  line-height: 1;
+}
+.theme-btn:hover { opacity: .8; }
+.theme-btn.active { opacity: 1; background: rgba(255,255,255,.12); }
+.theme-btn:active { transform: scale(.9); }
 .top-tab {
   display: flex;
   align-items: center;
@@ -199,8 +229,9 @@ body {
   padding: 14px 16px;
 }
 .mc-label { font-size: 11px; color: var(--ink-48); font-weight: 600; margin-bottom: 4px; letter-spacing: -0.12px; }
-.mc-value { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.224px; }
-.mc-change { font-size: 12px; margin-top: 3px; color: var(--ink-80); }
+.mc-row { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 2px 10px; }
+.mc-value { font-size: 15px; font-weight: 400; color: var(--ink); letter-spacing: -0.224px; }
+.mc-change { font-size: 12px; color: var(--ink-80); white-space: nowrap; }
 .pos { color: var(--up); }
 .neg { color: var(--down); }
 .flat { color: var(--flat); }
@@ -233,7 +264,7 @@ body {
   font-size: 12px;
   color: var(--ink-80);
 }
-.inv-chip span { font-weight: 600; }
+.inv-chip span { font-weight: 400; }
 .inv-chip span.pos { color: var(--up); }
 .inv-chip span.neg { color: var(--down); }
 
@@ -269,7 +300,7 @@ body {
 }
 .sc-name {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 400;
   letter-spacing: -0.224px;
   color: var(--ink);
   text-decoration: none;
@@ -278,7 +309,7 @@ body {
 .sc-vol { font-size: 12px; color: var(--ink-48); margin-left: auto; white-space: nowrap; }
 .badge {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 400;
   padding: 3px 10px;
   border-radius: var(--r-pill);
   white-space: nowrap;
@@ -296,8 +327,8 @@ body {
   flex-wrap: wrap;
 }
 .price-arrow { font-size: 15px; }
-.price-str { font-size: 15px; font-weight: 600; letter-spacing: -0.224px; }
-.price-change { font-size: 13px; font-weight: 600; }
+.price-str { font-size: 15px; font-weight: 400; letter-spacing: -0.224px; }
+.price-change { font-size: 13px; font-weight: 400; }
 
 .sc-metrics {
   display: flex;
@@ -312,7 +343,7 @@ body {
   border-radius: var(--r-sm);
   padding: 4px 10px;
 }
-.metric-tag b { color: var(--ink); font-weight: 600; }
+.metric-tag b { color: var(--ink); font-weight: 400; }
 
 .sc-summary {
   font-size: 13px;
@@ -333,7 +364,7 @@ body {
 }
 .sent-badge {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   padding: 3px 11px;
   border-radius: var(--r-pill);
   white-space: nowrap;
@@ -394,7 +425,7 @@ body {
 }
 .sector-row:hover { background: var(--pearl); }
 .sector-name { color: var(--ink-80); }
-.sector-rate { font-weight: 600; font-size: 12.5px; }
+.sector-rate { font-weight: 400; font-size: 12.5px; }
 
 .sector-analysis-text {
   font-size: 13px;
@@ -459,7 +490,7 @@ body {
 .sector-bar-rate {
   width: 56px;
   font-size: 11.5px;
-  font-weight: 600;
+  font-weight: 400;
   flex-shrink: 0;
 }
 
@@ -487,7 +518,7 @@ body {
   background: rgba(0,102,204,.1);
   color: var(--primary);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   padding: 2px 9px;
   border-radius: var(--r-pill);
 }
@@ -502,14 +533,14 @@ body {
 .cc-type { font-size: 15px; }
 .cc-source {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 400;
   color: var(--primary);
   background: rgba(0,102,204,.1);
   padding: 3px 10px;
   border-radius: var(--r-pill);
   white-space: nowrap;
 }
-.cc-title { font-size: 14.5px; font-weight: 600; letter-spacing: -0.224px; color: var(--ink); text-decoration: none; }
+.cc-title { font-size: 14.5px; font-weight: 400; letter-spacing: -0.224px; color: var(--ink); text-decoration: none; }
 .cc-title:hover { color: var(--primary); text-decoration: underline; }
 .cc-summary {
   font-size: 13px;
@@ -548,6 +579,10 @@ body {
 <div id="top-tabs">
   <div class="top-tab active" data-view="kospi">📊 한국 증시 리포트</div>
   <div class="top-tab" data-view="content">📰 콘텐츠 요약</div>
+  <div class="theme-toggle" id="theme-toggle">
+    <button type="button" class="theme-btn" data-theme-choice="light" aria-label="라이트 모드">☀️</button>
+    <button type="button" class="theme-btn" data-theme-choice="dark" aria-label="다크 모드">🌙</button>
+  </div>
 </div>
 
 <div id="view-wrap">
@@ -606,18 +641,17 @@ function priceStr(prev, close, rate) {
           <span class="price-str">${(close||0).toLocaleString()}원</span> ${ch}`;
 }
 
-function idxStr(prev, close, cr) {
-  if (!close) return '-';
-  const ch = `<span class="${cls(cr)}">${sign(cr)}${cr.toFixed(2)}%</span>`;
-  if (prev) return `${prev.toLocaleString(undefined,{minimumFractionDigits:2})} → ${close.toLocaleString(undefined,{minimumFractionDigits:2})} ${ch}`;
-  return `${close.toLocaleString(undefined,{minimumFractionDigits:2})} ${ch}`;
+function pctChg(rate) {
+  return `<span class="${cls(rate)}">${sign(rate)}${rate.toFixed(2)}%</span>`;
 }
 
 function renderMarketCard(label, valueHtml, changeHtml, breadth) {
   return `<div class="market-card">
     <div class="mc-label">${label}</div>
-    <div class="mc-value">${valueHtml}</div>
-    ${changeHtml ? `<div class="mc-change">${changeHtml}</div>` : ''}
+    <div class="mc-row">
+      <span class="mc-value">${valueHtml}</span>
+      ${changeHtml ? `<span class="mc-change">${changeHtml}</span>` : ''}
+    </div>
     ${breadth || ''}
   </div>`;
 }
@@ -626,13 +660,13 @@ function breadthBar(rise, fall, flat, total) {
   if (!total) return '';
   const rp = (rise/total*100).toFixed(1);
   const fp = (fall/total*100).toFixed(1);
-  const ep = (flat/total*100).toFixed(1);
   return `<div class="breadth-bar">
     <div class="bb-rise" style="width:${rp}%"></div>
     <div class="bb-fall" style="width:${fp}%"></div>
     <div class="bb-flat" style="flex:1"></div>
   </div>
-  <div class="breadth-label">상승 ${rise} / 하락 ${fall} / 보합 ${flat} | 상승비 ${rp}%</div>`;
+  <div class="breadth-label">상승 ${rise} / 하락 ${fall} / 보합 ${flat}</div>
+  <div class="breadth-label">상승비 ${rp}%</div>`;
 }
 
 function renderOverview(ov) {
@@ -641,31 +675,31 @@ function renderOverview(ov) {
   const cards = [
     renderMarketCard('KOSPI',
       `<span class="${cls(kpCr)}">${(ov.kospi_close||0).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`,
-      idxStr(ov.kospi_prev_close, ov.kospi_close, kpCr),
+      pctChg(kpCr),
       breadthBar(ov.kospi_rise||0, ov.kospi_fall||0, ov.kospi_flat||0, ov.kospi_total||0)
     ),
     renderMarketCard('KOSDAQ',
       `<span class="${cls(kqCr)}">${(ov.kosdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`,
-      idxStr(ov.kosdaq_prev_close, ov.kosdaq_close, kqCr),
+      pctChg(kqCr),
       breadthBar(ov.kosdaq_rise||0, ov.kosdaq_fall||0, ov.kosdaq_flat||0, ov.kosdaq_total||0)
     ),
     renderMarketCard('나스닥', `<span class="${cls(ov.nasdaq_cr||0)}">${(ov.nasdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`,
-      idxStr(ov.nasdaq_prev, ov.nasdaq_close, ov.nasdaq_cr||0)),
+      pctChg(ov.nasdaq_cr||0)),
     renderMarketCard('S&P 500', `<span class="${cls(ov.sp500_cr||0)}">${(ov.sp500_close||0).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`,
-      idxStr(ov.sp500_prev, ov.sp500_close, ov.sp500_cr||0)),
+      pctChg(ov.sp500_cr||0)),
     renderMarketCard('다우존스', `<span class="${cls(ov.dow_cr||0)}">${(ov.dow_close||0).toLocaleString(undefined,{minimumFractionDigits:2})}</span>`,
-      idxStr(ov.dow_prev, ov.dow_close, ov.dow_cr||0)),
+      pctChg(ov.dow_cr||0)),
     renderMarketCard('VIX', `<span class="${cls(-(ov.vix_cr||0))}">${(ov.vix||0).toFixed(2)}</span>`,
-      ov.vix_prev ? `${ov.vix_prev.toFixed(2)} → ${(ov.vix||0).toFixed(2)} <span class="${cls(ov.vix_cr||0)}">${sign(ov.vix_cr||0)}${(ov.vix_cr||0).toFixed(2)}%</span>` : ''),
+      ov.vix_prev ? `<span class="${cls(ov.vix_cr||0)}">${sign(ov.vix_cr||0)}${(ov.vix_cr||0).toFixed(2)}%</span>` : ''),
     renderMarketCard('미국 10년물',
       `${(ov.us10y||0).toFixed(2)}%`,
-      ov.us10y_prev ? (() => { const ch = ((ov.us10y||0)-(ov.us10y_prev||0)); return `${ov.us10y_prev.toFixed(2)}% → ${(ov.us10y||0).toFixed(2)}% <span class="${cls(ch)}">${sign(ch)}${ch.toFixed(3)}%p</span>`; })() : ''),
+      ov.us10y_prev ? (() => { const ch = ((ov.us10y||0)-(ov.us10y_prev||0)); return `<span class="${cls(ch)}">${sign(ch)}${ch.toFixed(3)}%p</span>`; })() : ''),
     renderMarketCard('원/달러',
       `<span class="${cls(ov.usdkrw_change||0)}">${(ov.usdkrw||0).toLocaleString(undefined,{minimumFractionDigits:2})}원</span>`,
-      ov.usdkrw_prev ? `${ov.usdkrw_prev.toFixed(2)} → ${(ov.usdkrw||0).toFixed(2)}원 <span class="${cls(ov.usdkrw_change||0)}">${sign(ov.usdkrw_change||0)}${(ov.usdkrw_change||0).toFixed(2)}원</span>` : ''),
+      ov.usdkrw_prev ? `<span class="${cls(ov.usdkrw_change||0)}">${sign(ov.usdkrw_change||0)}${(ov.usdkrw_change||0).toFixed(2)}원</span>` : ''),
     renderMarketCard('WTI 유가',
       `<span class="${cls(ov.wti_change_rate||0)}">${(ov.wti_close||0).toFixed(2)}</span>`,
-      idxStr(ov.wti_prev, ov.wti_close, ov.wti_change_rate||0)),
+      pctChg(ov.wti_change_rate||0)),
     (() => {
       const dep = ov.deposit || 0;
       const chg = ov.deposit_chg || 0;
@@ -1117,6 +1151,30 @@ function switchView(view) {
 document.querySelectorAll('.top-tab').forEach(tab => {
   tab.addEventListener('click', () => switchView(tab.dataset.view));
 });
+
+// ── Theme toggle (라이트/다크) ──
+function systemTheme() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+function applyTheme(theme) {
+  if (theme === 'dark' || theme === 'light') {
+    document.documentElement.setAttribute('data-theme', theme);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  const effective = theme || systemTheme();
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeChoice === effective);
+  });
+}
+document.querySelectorAll('.theme-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const choice = btn.dataset.themeChoice;
+    localStorage.setItem('theme', choice);
+    applyTheme(choice);
+  });
+});
+applyTheme(localStorage.getItem('theme'));
 
 // ── Init ──
 (function init() {
