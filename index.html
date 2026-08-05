@@ -400,33 +400,6 @@ body {
   line-height: 1.6;
 }
 
-/* ── Sector table ── */
-.sector-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.sector-col-title {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: -0.12px;
-  padding: 6px 0;
-  border-bottom: 2px solid var(--hairline);
-  margin-bottom: 6px;
-}
-.sector-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: var(--r-sm);
-  font-size: 13px;
-}
-.sector-row:hover { background: var(--pearl); }
-.sector-name { color: var(--ink-80); }
-.sector-rate { font-weight: 400; font-size: 12.5px; }
-
 .sector-analysis-text {
   font-size: 13px;
   color: var(--ink-80);
@@ -570,7 +543,6 @@ body {
   .side-month-header { display: none; }
   .date-item { white-space: nowrap; border-radius: var(--r-pill); }
   .main-panel { padding: 20px; }
-  .sector-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -784,34 +756,17 @@ function renderSector(sectorPerf, sectorAnalysis) {
   const bullish = sectorPerf.filter(s => s.rate > 0).sort((a,b) => b.rate - a.rate).slice(0,10);
   const bearish  = sectorPerf.filter(s => s.rate < 0).sort((a,b) => a.rate - b.rate).slice(0,10);
 
-  const rateHtml = (r) => `<span class="sector-rate ${cls(r)}">${sign(r)}${r.toFixed(2)}%</span>`;
-
-  const bRows = bullish.map(s => `<div class="sector-row"><span class="sector-name">${s.name}</span>${rateHtml(s.rate)}</div>`).join('');
-  const aRows = bearish.map(s => `<div class="sector-row"><span class="sector-name">${s.name}</span>${rateHtml(s.rate)}</div>`).join('');
-
-  const topMovers = [...sectorPerf].sort((a,b) => Math.abs(b.rate) - Math.abs(a.rate)).slice(0,14).sort((a,b) => b.rate - a.rate);
-  const chartHtml = topMovers.length ? renderDivergingChart(topMovers) : '';
-
-  const table = sectorPerf.length ? `<div class="sector-grid">
-    <div>
-      <div class="sector-col-title" style="color:var(--up)">🟢 강세 업종</div>
-      ${bRows || '<div style="color:var(--ink-48);font-size:13px">없음</div>'}
-    </div>
-    <div>
-      <div class="sector-col-title" style="color:var(--down)">🔴 약세 업종</div>
-      ${aRows || '<div style="color:var(--ink-48);font-size:13px">없음</div>'}
-    </div>
-  </div>` : '';
+  const chartSectors = [...bullish, ...bearish].sort((a,b) => b.rate - a.rate);
+  const chartHtml = chartSectors.length ? renderDivergingChart(chartSectors) : '';
 
   const analysisHtml = sectorAnalysis
     ? `<div class="sector-analysis-text">${escHtml(sectorAnalysis)}</div>` : '';
 
-  if (!table && !analysisHtml) return '';
+  if (!chartHtml && !analysisHtml) return '';
 
   return `<div class="section">
     <div class="section-title">🔄 섹터 순환매 분석</div>
     ${chartHtml}
-    ${table}
     ${analysisHtml}
   </div>`;
 }
@@ -870,8 +825,8 @@ function renderDivergingChart(sectors) {
   const rows = sectors.map(s => {
     const pct = (Math.abs(s.rate) / maxAbs * 100).toFixed(1);
     const isPos = s.rate >= 0;
-    const leftBar  = isPos ? '' : `<div class="db-bar" style="width:${pct}%;background:#3b82f6"></div>`;
-    const rightBar = isPos ? `<div class="db-bar" style="width:${pct}%;background:#ef4444"></div>` : '';
+    const leftBar  = isPos ? '' : `<div class="db-bar" style="width:${pct}%;background:var(--down)"></div>`;
+    const rightBar = isPos ? `<div class="db-bar" style="width:${pct}%;background:var(--up)"></div>` : '';
     return `<div class="sector-bar-row">
       <div class="sector-bar-name">${escHtml(s.name)}</div>
       <div class="db-track">
