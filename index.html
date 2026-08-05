@@ -978,7 +978,7 @@ function renderReport(data) {
     <div class="report-header">
       <div class="rh-badge">${mEmoji} ${badgeTxt}</div>
       <div class="rh-title">${formatted} 한국 증시 리포트</div>
-      <div class="rh-meta">KOSPI ${(ov.kospi_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kpSign}${kpCr.toFixed(2)}%)&nbsp;&nbsp;|&nbsp;&nbsp;KOSDAQ ${(ov.kosdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kqSign}${kqCr.toFixed(2)}%)&nbsp;&nbsp;토큰 ${tokStr}</div>
+      <div class="rh-meta">KOSPI ${ov.kospi_prev_close ? ov.kospi_prev_close.toLocaleString(undefined,{minimumFractionDigits:2})+' → ' : ''}${(ov.kospi_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kpSign}${kpCr.toFixed(2)}%)&nbsp;&nbsp;|&nbsp;&nbsp;KOSDAQ ${ov.kosdaq_prev_close ? ov.kosdaq_prev_close.toLocaleString(undefined,{minimumFractionDigits:2})+' → ' : ''}${(ov.kosdaq_close||0).toLocaleString(undefined,{minimumFractionDigits:2})} (${kqSign}${kqCr.toFixed(2)}%)&nbsp;&nbsp;토큰 ${tokStr}</div>
     </div>
     ${renderOverview(ov)}`;
 
